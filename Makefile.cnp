@@ -1,0 +1,16 @@
+RATINGS_POD := $(shell kubectl get pod -l app=ratings -o 'jsonpath={.items[0].metadata.name}')
+GAT_ADD := $(shell kubectl get gtw -o 'jsonpath={.items[0].status.addresses[0].value}')
+
+cnp:
+	kubectl apply -f cnp.yaml
+
+test-without-header:
+	kubectl exec $(RATINGS_POD) -- curl -sS http://productpage:9080/ -v
+
+test-with-header:
+	kubectl exec $(RATINGS_POD) -- curl -sS -H "foo:bar" http://productpage:9080/ -v
+	
+external-test:
+	curl -sS -o /dev/null -H "Host: www.products.com"  http://$(GAT_ADD)/ -v
+
+	

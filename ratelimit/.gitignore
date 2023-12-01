@@ -1,0 +1,17 @@
+cover.out
+
+bin/
+.idea/
+.vscode/
+vendor
+cert.pem
+key.pem
+private.pem
+redis-per-second.conf
+redis.conf
+redis-verify-peer.conf
+dump.rdb
+
+# Directories created by "test_with_redis" make target.
+63*
+26*

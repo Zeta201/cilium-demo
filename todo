@@ -1,0 +1,11 @@
+service mesh:
+enabled jwt authentication for echo service
+enabled circuit breaker for details service
+enable rate limit for productpage
+enabled service to service communication limits cnp l7
+
+
+ingress:
+
+
+

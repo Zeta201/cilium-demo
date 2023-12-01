@@ -1,0 +1,24 @@
+ACCESS_TOKEN=$(shell curl -s -X POST https://auth.funnel-labs.io/auth/realms/funnel/protocol/openid-connect/token \
+  -d "client_id=service&username=demo&password=abcd1234&grant_type=password" | jq -r '.access_token')
+
+GAT_ADD := $(shell kubectl get gtw -o 'jsonpath={.items[0].status.addresses[0].value}')
+
+auth-filter:
+	kubectl apply -f auth-filter.yaml
+
+test-details-without-token:
+	curl -sS -o /dev/null -H "Host: www.details.com" http://$(GAT_ADD)/details/1 -v
+
+test-details-with-token:
+	curl -H "Host: www.details.com" -H "Authorization: Bearer $(ACCESS_TOKEN)" http://$(GAT_ADD)/details/1 | jq
+	
+test-echo-with-token:
+	curl -sS -o /dev/null -H "Host: www.echo.com" -H "Authorization: Bearer $(ACCESS_TOKEN)" http://$(GAT_ADD)/ -v
+
+test-echo-without-token:
+	curl -H "Host: www.echo.com" http://$(GAT_ADD)/ -v
+	
+clean:
+	- kubectl delete -f auth-filter.yaml
+	
+

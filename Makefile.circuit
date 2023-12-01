@@ -1,0 +1,23 @@
+FORTIO_POD := $(shell kubectl get pods -l app=fortio -o 'jsonpath={.items[0].metadata.name}')
+
+GAT_ADD := $(shell kubectl get gtw -o 'jsonpath={.items[0].status.addresses[0].value}')
+
+CON := 2
+
+apps:
+	kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/HEAD/examples/kubernetes/servicemesh/envoy/test-application-proxy-circuit-breaker.yaml
+
+circuit-breaker:
+	kubectl apply -f envoy-circuit-breaker.yaml
+	
+internal-test:
+	@kubectl exec $(FORTIO_POD) -c fortio -- /usr/bin/fortio load -c $(CON) -qps 0 -n 20 http://details:9080/details/1
+
+external-test:
+	fortio load -H 'Host:www.details.com' -c $(CON) -qps 0 -n 20 http://$(GAT_ADD)/details/1
+
+clean-policy:
+	kubectl delete ccec --all
+	
+clean:
+	kubectl delete -f  https://raw.githubusercontent.com/cilium/cilium/HEAD/examples/kubernetes/servicemesh/envoy/test-application-proxy-circuit-breaker.yaml

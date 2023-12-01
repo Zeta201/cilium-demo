@@ -1,0 +1,23 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "rule1"
+spec:
+  description: "Allow HTTP GET /details from ratings to app=details"
+  endpointSelector:
+    matchLabels:
+      app: productpage
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: ratings
+      toPorts:
+        - ports:
+            - port: "9080"
+              protocol: TCP
+          rules:
+            http:
+              - method: "GET"
+                path: "/"
+                headers:
+                  - "foo: bar"

@@ -1,0 +1,23 @@
+GAT_ADD := $(shell kubectl get gtw -o 'jsonpath={.items[0].status.addresses[0].value}')
+
+redis:
+	kubectl apply -f rate-limit.yaml
+
+enable-global-rate-limit-config:
+	- kubectl apply -f global-config.yaml
+	- kubectl rollout restart deployment envoy-gateway -n envoy-gateway-system
+
+enable-rate-limit-user:
+	- kubectl apply -f rate-limit-user.yaml
+	
+test-rate-limit-user:
+	- for i in {1..4}; do curl -I --header "Host: www.details.com" --header "x-user-id: one" http://$(GAT_ADD)/details/1 ; sleep 1; done
+	
+clean:
+	- kubectl delete -f rate-limit.yaml
+	- kubectl delete -f global-config.yaml
+	- kubectl delete -f rate-limit-user.yaml
+	
+
+
+	
